@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Simple Todo App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body>
+    <!-- todo application -->
+    <div id="app">
+        <div class="container py-5 px-2 mx-auto max-w-[1000px]">
+            <h1 class="text-2xl mb-5">Simple Todo App {{ editIndex }}</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="mb-2 space-y-2 mt-1">
+                    <input type="text"
+                        class="border p-2 w-full rounded-md border-slate-300 focus-visible:outline-none focus-visible:border-violet-500"
+                        placeholder="Enter title" v-model="title" />
+                    <textarea name="desc"
+                        class="border p-2 w-full rounded-md border-slate-300 min-h-[120px] focus-visible:outline-none focus-visible:border-violet-500 mb-2"
+                        placeholder="Enter description..." v-model="desc"></textarea>
+                    <div>
+                        <button class="bg-neutral-500 px-6 py-2 text-white cursor-pointer rounded-md mr-1 hover:opacity-[0.7]" @click="resetForm">
+                            Reset
+                        </button>
+                        <button class="bg-violet-500 px-6 py-2 text-white cursor-pointer rounded-md hover:opacity-[0.7]" v-if="editIndex === null" @click="submit()">
+                            Submit
+                        </button>
+                        <button class="bg-violet-500 px-6 py-2 text-white cursor-pointer rounded-md hover:opacity-[0.7]" v-else @click="update()">
+                            Update
+                        </button>
+                    </div>
+                </div>
+                <div class="md:col-span-2 overflow-x-auto p-1">
+                    <div class="rounded-md shadow-md">
+                        <table class="w-full text-left table-auto min-w-max text-slate-800">
+                            <thead>
+                                <tr
+                                    class="text-slate-500 border-b border-slate-300 bg-slate-50 font-bold text-sm leading-none">
+                                    <th>
+                                        <p class="p-4 px-2">SL</p>
+                                    </th>
+                                    <th>
+                                        <p class="p-4 px-2">Details</p>
+                                    </th>
+                                    <th class="max-w-[100px]">
+                                        <p class="p-4 px-2">Actions</p>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in data" :key="index" 
+                                    :class="{
+                                        'hover:bg-slate-50 text-sm': true,
+                                        'bg-violet-200': editIndex === index
+                                    }"
+                                >
+                                    <td>
+                                        <p class="p-2 text-center">{{ index + 1 }}</p>
+                                    </td>
+                                    <td>
+                                        <div class="p-2">
+                                            <p class="font-bold italic">{{ item.title }}</p>
+                                            <p>{{ item.desc }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="max-w-[100px]">
+                                        <div class="p-2">
+                                            <button class="bg-violet-500 px-2 py-1 text-white rounded cursor-pointer mr-1 hover:opacity-[0.7]" @click="edit(index)">Edit</button>
+                                            <button class="bg-rose-500 px-2 py-1 text-white rounded cursor-pointer hover:opacity-[0.7]" @click="remove(index)">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="data.length === 0">
+                                    <td colspan="3" class="text-center p-4 text-gray-500">No data yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue
+        
+        createApp({
+            setup(){
+                const title = ref(null)
+                const desc = ref(null)
+                const editIndex = ref(null)
+                const data = ref([])
+
+
+                // submit 
+                function submit(){
+                    if (title.value.trim() && desc.value.trim()) {
+                        data.value.push({ title: title.value.trim(), desc: desc.value.trim() })
+                        resetForm()
+                    } else {
+                        alert("both of the field is required!")
+                    }
+                }
+
+                // edit 
+                function edit(index) {
+                    if(checkIndex(index)){
+                        editIndex.value = index
+                        title.value = data.value[index].title
+                        desc.value = data.value[index].desc
+                    }
+                }
+
+                // update 
+                function update() {
+                    if(checkIndex(editIndex.value)){
+                        data.value[editIndex.value].title = title.value.trim()
+                        data.value[editIndex.value].desc = desc.value.trim()
+                        resetForm()
+                    }
+                    console.log("update")
+                }
+
+                // remove item
+                function remove(index) {
+                    if(confirm("Are you sure? ")){
+                        if(checkIndex(index)){
+                            data.value.splice(index, 1)
+                        }
+                    }
+                }
+
+
+                // check array is not empty
+                function checkIndex(index) {
+                    if(index >= 0 && index < data.value.length) return true
+                    return false
+                }
+
+                // reset form 
+                function resetForm() {
+                    title.value = ''
+                    desc.value = ''
+                    editIndex.value = null
+                }
+
+
+                return {
+                    title,
+                    desc,
+                    data,
+                    editIndex,
+                    resetForm,
+                    submit,
+                    edit,
+                    update,
+                    remove
+                }
+            }
+        }).mount("#app")
+    </script>
+
+</body>
+
+</html>
